@@ -1,7 +1,4 @@
-class Parser {
-    public tokens = ["a", "b", "c"];
+import {Engine} from "./engine";
 
-}
-
-let p = new Parser()
-console.log(p.tokens.map((t: string) => t+"d"))
+const engine = new Engine("canvas");
+engine.start();
