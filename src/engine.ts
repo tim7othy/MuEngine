@@ -1,6 +1,5 @@
-import {gl, GLUtilities} from "./core/webgl/gl";
+import {GLUtilities} from "./core/webgl/gl";
 import {Shader} from "./core/webgl/shader";
-import { normalize } from "path";
 
 interface IAttributeLocations {
     [attribute: string]: number;
@@ -8,6 +7,7 @@ interface IAttributeLocations {
 
 export class Engine {
     private _canvas: HTMLCanvasElement;
+    private _gl: WebGLRenderingContext;
     private _shaderProgram: WebGLProgram;
     private _buffer: WebGLBuffer;
     private _attribLocations: IAttributeLocations;
@@ -15,17 +15,17 @@ export class Engine {
     constructor(elementId?: string) {
         this._canvas = this.initializeCanvas(elementId);
         // 初始化 gl 全局变量为 webgl 渲染上下文环境
-        GLUtilities.initializeWebglContext(this._canvas);
+        this._gl = GLUtilities.initializeWebglContext(this._canvas);
         this._shaderProgram = this.loadShaders();
         this._attribLocations = {
-            positionLocation: gl.getAttribLocation(this._shaderProgram, "a_position"),
+            positionLocation: this._gl.getAttribLocation(this._shaderProgram, "a_position"),
         };
         this._buffer = this.createBuffer();
     }
 
     public start(): void {
-        gl.clearColor(255, 255, 255, 1);
-        gl.viewport(0, 0, this._canvas.width, this._canvas.height);
+        this._gl.clearColor(255, 255, 255, 1);
+        this._gl.viewport(0, 0, this._canvas.width, this._canvas.height);
         this.loop();
     }
 
@@ -53,11 +53,12 @@ export class Engine {
                 gl_FragColor = vec4(1.0, 0, 0.5, 1.0);
             }
         `;
-        const shader = new Shader(vertexShaderSource, fragmentShaderSource);
+        const shader = new Shader(this._gl, vertexShaderSource, fragmentShaderSource);
         return shader.program;
     }
 
     private createBuffer(): WebGLBuffer {
+        const gl = this._gl;
         const buffer = gl.createBuffer();
         if (!buffer) { throw new Error("创建缓冲区失败"); }
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -73,6 +74,7 @@ export class Engine {
     }
 
     private loop(): void {
+        const gl = this._gl;
         gl.clear(gl.COLOR_BUFFER_BIT);
 
 
